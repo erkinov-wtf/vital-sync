@@ -24,6 +24,7 @@ func NewRouter(cfg *config.Config) *Router {
 	// Middleware
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	//TODO use custom AUTH() middleware
 
 	return &Router{
 		engine: r,
