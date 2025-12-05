@@ -1,4 +1,4 @@
-package vital_sync
+package main
 
 import (
 	"github.com/erkinov-wtf/vital-sync/internal/api/services"
@@ -23,5 +23,9 @@ func main() {
 	// engine and routes
 	router := http.NewRouter(cfg, authSvc)
 
-	router.Run()
+	err = router.Run()
+	if err != nil {
+		lgr.Error("cant run the http engine", err.Error())
+		return
+	}
 }

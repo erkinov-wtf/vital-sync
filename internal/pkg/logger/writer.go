@@ -33,7 +33,7 @@ func (fw *fileWriter) Write(p []byte) (n int, err error) {
 			return 0, err
 		}
 
-		filename := fmt.Sprintf("itv_go_movie_service_%v.log", today)
+		filename := fmt.Sprintf("vital_sync_%v.log", today)
 		filePath := filepath.Join(fw.logDir, filename)
 
 		file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
