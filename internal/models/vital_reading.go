@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/erkinov-wtf/vital-sync/internal/enums"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -12,10 +13,10 @@ type VitalReading struct {
 	CheckinID uuid.UUID `gorm:"column:checkin_id;type:uuid;not null;index"`
 	PatientID uuid.UUID `gorm:"column:patient_id;type:uuid;not null;index"`
 
-	VitalType    string   `gorm:"column:vital_type;type:varchar(50);not null;index"` // blood_pressure, glucose, heart_rate, temperature, weight, oxygen_saturation
-	ValueNumeric *float64 `gorm:"column:value_numeric;type:decimal(10,2)"`
-	ValueText    *string  `gorm:"column:value_text;type:varchar(50)"`
-	Unit         *string  `gorm:"column:unit;type:varchar(20)"` // mmHg, mg/dL, bpm, °C, kg, %
+	VitalType    enums.VitalType  `gorm:"column:vital_type;type:varchar(50);not null;index"` // blood_pressure, glucose, heart_rate, temperature, weight, oxygen_saturation
+	ValueNumeric *float64         `gorm:"column:value_numeric;type:decimal(10,2)"`
+	ValueText    *string          `gorm:"column:value_text;type:varchar(50)"`
+	Unit         *enums.VitalUnit `gorm:"column:unit;type:varchar(20)"` // mmHg, mg/dL, bpm, °C, kg, %
 
 	IsAbnormal            bool     `gorm:"column:is_abnormal;default:false"`
 	DeviationFromBaseline *float64 `gorm:"column:deviation_from_baseline;type:decimal(10,2)"`

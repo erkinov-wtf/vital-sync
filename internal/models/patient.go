@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/erkinov-wtf/vital-sync/internal/enums"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -22,13 +23,13 @@ type Patient struct {
 	BaselineVitals JSONB `gorm:"column:baseline_vitals;type:jsonb"`
 
 	// Monitoring Configuration
-	RiskLevel           string `gorm:"column:risk_level;type:varchar(20);default:'medium';index"`    // low, medium, high, critical
-	MonitoringFrequency string `gorm:"column:monitoring_frequency;type:varchar(30);default:'daily'"` // twice_daily, daily, every_other_day, weekly
+	RiskLevel           enums.RiskLevel           `gorm:"column:risk_level;type:varchar(20);default:'medium';index"`    // low, medium, high, critical
+	MonitoringFrequency enums.MonitoringFrequency `gorm:"column:monitoring_frequency;type:varchar(30);default:'daily'"` // twice_daily, daily, every_other_day, weekly
 
 	// Status Tracking
-	Status         string     `gorm:"column:status;type:varchar(20);default:'active';index"` // active, paused, discharged, critical
-	DischargeDate  *time.Time `gorm:"column:discharge_date;type:timestamptz"`
-	DischargeNotes *string    `gorm:"column:discharge_notes;type:text"`
+	Status         enums.PatientStatus `gorm:"column:status;type:varchar(20);default:'active';index"` // active, paused, discharged, critical
+	DischargeDate  *time.Time          `gorm:"column:discharge_date;type:timestamptz"`
+	DischargeNotes *string             `gorm:"column:discharge_notes;type:text"`
 
 	// Emergency Contact
 	EmergencyContactName     *string `gorm:"column:emergency_contact_name;type:varchar(255)"`

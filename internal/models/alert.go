@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/erkinov-wtf/vital-sync/internal/enums"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -12,8 +13,8 @@ type Alert struct {
 	PatientID uuid.UUID  `gorm:"column:patient_id;type:uuid;not null;index"`
 	CheckinID *uuid.UUID `gorm:"column:checkin_id;type:uuid"`
 
-	Severity  string `gorm:"column:severity;type:varchar(20);not null;index"` // low, medium, high, critical
-	AlertType string `gorm:"column:alert_type;type:varchar(50);not null"`     // vital_abnormal, no_response, sentiment_negative, pattern_detected
+	Severity  enums.AlertSeverity `gorm:"column:severity;type:varchar(20);not null;index"` // low, medium, high, critical
+	AlertType enums.AlertType     `gorm:"column:alert_type;type:varchar(50);not null"`     // vital_abnormal, no_response, sentiment_negative, pattern_detected
 
 	Title   string `gorm:"column:title;type:varchar(255);not null"`
 	Message string `gorm:"column:message;type:text;not null"`

@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/erkinov-wtf/vital-sync/internal/enums"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -13,9 +14,9 @@ type Checkin struct {
 	ScheduleID *uuid.UUID `gorm:"column:schedule_id;type:uuid"`
 
 	// Check-in Flow
-	Status      string     `gorm:"column:status;type:varchar(20);default:'pending';index"` // pending, in_progress, completed, failed, missed
-	InitiatedAt time.Time  `gorm:"column:initiated_at;type:timestamptz;default:now()"`
-	CompletedAt *time.Time `gorm:"column:completed_at;type:timestamptz"`
+	Status      enums.CheckinStatus `gorm:"column:status;type:varchar(20);default:'pending';index"` // pending, in_progress, completed, failed, missed
+	InitiatedAt time.Time           `gorm:"column:initiated_at;type:timestamptz;default:now()"`
+	CompletedAt *time.Time          `gorm:"column:completed_at;type:timestamptz"`
 
 	// AI-Generated Questions
 	Questions JSONB `gorm:"column:questions;type:jsonb;not null;default:'[]'"`
@@ -25,9 +26,9 @@ type Checkin struct {
 	RawMessages StringArray `gorm:"column:raw_messages;type:text[]"`
 
 	// AI Analysis
-	AIAnalysis    JSONB   `gorm:"column:ai_analysis;type:jsonb"`
-	MedicalStatus *string `gorm:"column:medical_status;type:varchar(20);index"` // normal, concern, urgent, critical
-	RiskScore     *int    `gorm:"column:risk_score;type:integer"`               // 0-100 scale
+	AIAnalysis    JSONB                `gorm:"column:ai_analysis;type:jsonb"`
+	MedicalStatus *enums.MedicalStatus `gorm:"column:medical_status;type:varchar(20);index"` // normal, concern, urgent, critical
+	RiskScore     *int                 `gorm:"column:risk_score;type:integer"`               // 0-100 scale
 
 	// Doctor Review
 	ReviewedBy  *uuid.UUID `gorm:"column:reviewed_by;type:uuid"`
