@@ -105,6 +105,10 @@ func MustLoad() *Config {
 		}
 	}
 
+	// allow overriding DB (and JWT) via environment even in local mode for docker/devops flexibility
+	updateDbCredentials(&cfg.Internal.Database)
+	updateJwtSecret(&cfg.Internal.Jwt)
+
 	log.Println("Configurations loaded")
 	setTimezone(&cfg)
 

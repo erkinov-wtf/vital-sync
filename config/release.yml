@@ -1,15 +1,15 @@
 production_configs:
   server:
-    port: 8083
+    port: 8080
     host: "localhost"
 
   database:
-    host: "localhost"
-    port: "5432"
-    name: "postgres"
+    host: "db"
+    port: "6061"
+    name: "vital-sync"
     user: "postgres"
     schema: "public"
-    password: "postgres" # will be overwritten from os.Getenv()
+    password: "vital-sync" # will be overwritten from os.Getenv()
 
   jwt:
     audience: "newUsersProd"

@@ -4,7 +4,7 @@ local_configs:
     host: "0.0.0.0"
 
   database:
-    host: "localhost" #only in docker, change to localhost when needed
+    host: "db"
     port: "5432"
     name: "postgres"
     user: "postgres"
