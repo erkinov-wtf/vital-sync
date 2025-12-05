@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/erkinov-wtf/vital-sync/internal/config"
 	"github.com/erkinov-wtf/vital-sync/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
