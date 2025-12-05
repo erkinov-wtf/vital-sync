@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type JSONB map[string]interface{}
@@ -33,7 +35,7 @@ func (s StringArray) Value() (driver.Value, error) {
 	if s == nil {
 		return nil, nil
 	}
-	return json.Marshal(s)
+	return pq.Array([]string(s)).Value()
 }
 
 func (s *StringArray) Scan(value interface{}) error {
@@ -41,11 +43,12 @@ func (s *StringArray) Scan(value interface{}) error {
 		*s = nil
 		return nil
 	}
-	bytes, ok := value.([]byte)
-	if !ok {
-		return nil
+	var arr []string
+	if err := pq.Array(&arr).Scan(value); err != nil {
+		return err
 	}
-	return json.Unmarshal(bytes, s)
+	*s = StringArray(arr)
+	return nil
 }
 
 type TimeArray []time.Time
