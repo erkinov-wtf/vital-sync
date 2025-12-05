@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -13,8 +12,6 @@ const (
 	LocalEnv   = "local"
 	ReleaseEnv = "release"
 )
-
-const DefaultTimeout = 10 * time.Second
 
 type Config struct {
 	AppName  string `yaml:"app_name"`
