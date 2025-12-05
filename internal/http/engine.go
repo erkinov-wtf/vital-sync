@@ -3,6 +3,8 @@ package http
 import (
 	"fmt"
 
+	"github.com/erkinov-wtf/vital-sync/internal/api/middlewares"
+	"github.com/erkinov-wtf/vital-sync/internal/api/services"
 	"github.com/erkinov-wtf/vital-sync/internal/config"
 	"github.com/gin-gonic/gin"
 )
@@ -13,8 +15,7 @@ type Router struct {
 	config *config.Config
 }
 
-// NewRouter creates a new router instance
-func NewRouter(cfg *config.Config) *Router {
+func NewRouter(cfg *config.Config, authSvc *services.AuthService) *Router {
 	if cfg.Env == config.ReleaseEnv {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -24,7 +25,7 @@ func NewRouter(cfg *config.Config) *Router {
 	// Middleware
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	//TODO use custom AUTH() middleware
+	r.Use(middlewares.Auth(authSvc))
 
 	return &Router{
 		engine: r,

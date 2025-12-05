@@ -14,7 +14,7 @@ type PostgresDB struct {
 	DB *gorm.DB
 }
 
-func MustLoadDB(cfg *config.Config, logger *slog.Logger) (*PostgresDB, error) {
+func LoadDB(cfg *config.Config, logger *slog.Logger) (*PostgresDB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%v search_path=%s TimeZone=%s sslmode=disable",
 		cfg.Internal.Database.Host,

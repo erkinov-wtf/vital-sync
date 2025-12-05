@@ -7,13 +7,9 @@ import (
 
 	"github.com/erkinov-wtf/vital-sync/internal/config"
 	"github.com/erkinov-wtf/vital-sync/internal/constants"
+	"github.com/erkinov-wtf/vital-sync/internal/pkg/errs"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-)
-
-var (
-	ErrInvalidToken = errors.New("invalid token")
-	ErrExpiredToken = errors.New("token has expired")
 )
 
 type CustomClaims struct {
@@ -23,7 +19,7 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(userId, username, email, role string, jwtConfig *config.Jwt, tokenType constants.TokenType, duration time.Duration) (string, time.Time, error) {
+func GenerateToken(userId, role string, jwtConfig *config.Jwt, tokenType constants.TokenType, duration time.Duration) (string, time.Time, error) {
 	now := time.Now()
 
 	if duration <= 0 {
@@ -79,14 +75,14 @@ func ValidateToken(tokenString, secretKey string) (*CustomClaims, error) {
 
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet) {
-			return nil, ErrExpiredToken
+			return nil, errs.ErrExpiredToken
 		}
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
 	claims, ok := token.Claims.(*CustomClaims)
 	if !ok || !token.Valid {
-		return nil, ErrInvalidToken
+		return nil, errs.ErrInvalidToken
 	}
 
 	return claims, nil
