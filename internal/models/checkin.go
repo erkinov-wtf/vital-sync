@@ -9,7 +9,7 @@ import (
 )
 
 type Checkin struct {
-	ID         uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	ID         uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	PatientID  uuid.UUID  `gorm:"column:patient_id;type:uuid;not null;index"`
 	ScheduleID *uuid.UUID `gorm:"column:schedule_id;type:uuid"`
 

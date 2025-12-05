@@ -10,7 +10,7 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID      `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	ID           uuid.UUID      `gorm:"type:uuid;primaryKey"`
 	Email        string         `gorm:"column:email;type:varchar(255);not null;uniqueIndex"`
 	PhoneNumber  string         `gorm:"column:phone_number;type:varchar(20);not null;uniqueIndex"`
 	PasswordHash string         `gorm:"column:password_hash;type:varchar(255);not null"`

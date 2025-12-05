@@ -9,7 +9,7 @@ import (
 )
 
 type Patient struct {
-	ID       uuid.UUID `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 	UserID   uuid.UUID `gorm:"column:user_id;type:uuid;not null;uniqueIndex"`
 	DoctorID uuid.UUID `gorm:"column:doctor_id;type:uuid;not null;index"`
 

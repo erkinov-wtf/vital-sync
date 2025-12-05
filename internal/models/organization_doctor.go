@@ -8,7 +8,7 @@ import (
 )
 
 type OrganizationDoctor struct {
-	ID             uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	ID             uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	DoctorID       uuid.UUID  `gorm:"column:doctor_id;type:uuid;not null;index:idx_org_doctors_composite"`
 	OrganizationID uuid.UUID  `gorm:"column:organization_id;type:uuid;not null;index:idx_org_doctors_composite"`
 	JoinedAt       time.Time  `gorm:"column:joined_at;type:timestamptz;default:now()"`

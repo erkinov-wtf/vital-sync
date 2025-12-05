@@ -9,7 +9,7 @@ import (
 )
 
 type CheckinSchedule struct {
-	ID            uuid.UUID               `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	ID            uuid.UUID               `gorm:"type:uuid;primaryKey"`
 	PatientID     uuid.UUID               `gorm:"column:patient_id;type:uuid;not null;uniqueIndex"`
 	Frequency     enums.ScheduleFrequency `gorm:"column:frequency;type:varchar(30);not null"` // twice_daily, daily, every_other_day, weekly
 	TimeSlots     TimeArray               `gorm:"column:time_slots;type:time[]"`

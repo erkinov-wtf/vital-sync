@@ -8,7 +8,7 @@ import (
 )
 
 type TelegramIntegration struct {
-	ID               uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	ID               uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	PatientID        uuid.UUID  `gorm:"column:patient_id;type:uuid;not null;uniqueIndex"`
 	TelegramChatID   *int64     `gorm:"column:telegram_chat_id;type:bigint;uniqueIndex"`
 	TelegramUsername *string    `gorm:"column:telegram_username;type:varchar(255)"`

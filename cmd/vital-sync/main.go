@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/erkinov-wtf/vital-sync/internal/api/handlers"
+	"github.com/erkinov-wtf/vital-sync/internal/api/routes"
 	"github.com/erkinov-wtf/vital-sync/internal/api/services"
 	"github.com/erkinov-wtf/vital-sync/internal/config"
 	"github.com/erkinov-wtf/vital-sync/internal/http"
@@ -19,9 +21,14 @@ func main() {
 
 	// svc init
 	authSvc := services.NewAuthService(cfg, db.DB)
+	orgSvc := services.NewOrganizationService(db.DB)
+
+	// hnr init
+	orgHnr := handlers.NewOrganizationHandler(orgSvc)
 
 	// engine and routes
 	router := http.NewRouter(cfg, authSvc)
+	routes.RegisterRoutes(router, orgHnr)
 
 	err = router.Run()
 	if err != nil {

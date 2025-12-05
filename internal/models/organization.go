@@ -8,7 +8,7 @@ import (
 )
 
 type Organization struct {
-	ID            uuid.UUID `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	ID            uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name          string    `gorm:"column:name;type:varchar(255);not null"`
 	Address       *string   `gorm:"column:address;type:text"`
 	LicenseNumber string    `gorm:"column:license_number;type:varchar(100);not null;uniqueIndex"`
