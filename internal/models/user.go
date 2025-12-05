@@ -11,9 +11,8 @@ import (
 
 type User struct {
 	ID           uuid.UUID      `gorm:"type:uuid;primaryKey"`
-	Email        string         `gorm:"column:email;type:varchar(255);not null;uniqueIndex"`
 	PhoneNumber  string         `gorm:"column:phone_number;type:varchar(20);not null;uniqueIndex"`
-	PasswordHash string         `gorm:"column:password_hash;type:varchar(255);not null"`
+	PasswordHash string         `gorm:"column:password_hash;type:varchar(255);not null" json:"-"`
 	FirstName    string         `gorm:"column:first_name;type:varchar(100);not null"`
 	LastName     string         `gorm:"column:last_name;type:varchar(100);not null"`
 	Role         enums.UserRole `gorm:"column:role;type:varchar(20);not null"` // admin, doctor, patient

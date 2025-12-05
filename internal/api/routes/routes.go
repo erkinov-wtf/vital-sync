@@ -7,9 +7,11 @@ import (
 
 func RegisterRoutes(router *http.Router,
 	orgHnr *handlers.OrganizationHandler,
+	userHnr *handlers.UserHandler,
 ) {
 	api := router.Engine().Group("/api/v1")
 	{
 		registerOrgRoutes(api, orgHnr)
+		registerUserRoutes(api, userHnr)
 	}
 }

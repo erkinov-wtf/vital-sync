@@ -11,19 +11,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type DoctorService struct {
+type UserService struct {
 	db   *gorm.DB
 	logg *slog.Logger
 }
 
-func NewDoctorService(db *gorm.DB, lgr *slog.Logger) *DoctorService {
-	return &DoctorService{
+func NewUserService(db *gorm.DB, lgr *slog.Logger) *UserService {
+	return &UserService{
 		db:   db,
 		logg: lgr,
 	}
 }
 
-func (s *DoctorService) CreateDoctor(doctor *models.User, orgID uuid.UUID) (*models.User, *models.OrganizationDoctor, error) {
+func (s *UserService) CreateDoctor(doctor *models.User, orgID uuid.UUID) (*models.User, *models.OrganizationDoctor, error) {
 	doctor.Role = enums.UserRoleDoctor
 	user, orgDoc, err := s.createAndAssignDoctor(doctor, orgID)
 	if err != nil {
@@ -34,7 +34,7 @@ func (s *DoctorService) CreateDoctor(doctor *models.User, orgID uuid.UUID) (*mod
 	return user, orgDoc, nil
 }
 
-func (s *DoctorService) GetDoctorByID(id uuid.UUID) (*models.User, error) {
+func (s *UserService) GetDoctorByID(id uuid.UUID) (*models.User, error) {
 	var doctor models.User
 	if err := s.db.Where("role = ?", enums.UserRoleDoctor).First(&doctor, "id = ?", id).Error; err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (s *DoctorService) GetDoctorByID(id uuid.UUID) (*models.User, error) {
 	return &doctor, nil
 }
 
-func (s *DoctorService) ListDoctors(includeInactive bool) ([]models.User, error) {
+func (s *UserService) ListDoctors(includeInactive bool) ([]models.User, error) {
 	var doctors []models.User
 	query := s.db.Where("role = ?", enums.UserRoleDoctor)
 	if !includeInactive {
@@ -55,7 +55,6 @@ func (s *DoctorService) ListDoctors(includeInactive bool) ([]models.User, error)
 }
 
 type DoctorUpdate struct {
-	Email       *string
 	PhoneNumber *string
 	FirstName   *string
 	LastName    *string
@@ -63,16 +62,13 @@ type DoctorUpdate struct {
 	IsActive    *bool
 }
 
-func (s *DoctorService) UpdateDoctor(id uuid.UUID, changes DoctorUpdate) (*models.User, error) {
+func (s *UserService) UpdateDoctor(id uuid.UUID, changes DoctorUpdate) (*models.User, error) {
 	var doctor models.User
 	if err := s.db.Where("role = ?", enums.UserRoleDoctor).First(&doctor, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 
 	updates := map[string]interface{}{}
-	if changes.Email != nil {
-		updates["email"] = *changes.Email
-	}
 	if changes.PhoneNumber != nil {
 		updates["phone_number"] = *changes.PhoneNumber
 	}
@@ -104,7 +100,7 @@ func (s *DoctorService) UpdateDoctor(id uuid.UUID, changes DoctorUpdate) (*model
 	return &doctor, nil
 }
 
-func (s *DoctorService) DeleteDoctor(id uuid.UUID) error {
+func (s *UserService) DeleteDoctor(id uuid.UUID) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("doctor_id = ?", id).Delete(&models.OrganizationDoctor{}).Error; err != nil {
 			return err
@@ -122,11 +118,11 @@ func (s *DoctorService) DeleteDoctor(id uuid.UUID) error {
 	})
 }
 
-func (s *DoctorService) createAndAssignDoctor(doctor *models.User, organizationID uuid.UUID) (*models.User, *models.OrganizationDoctor, error) {
+func (s *UserService) createAndAssignDoctor(doctor *models.User, organizationID uuid.UUID) (*models.User, *models.OrganizationDoctor, error) {
 	var assignment *models.OrganizationDoctor
 
 	err := s.db.Transaction(func(tx *gorm.DB) error {
-		s.db.Create(doctor)
+		tx.Create(doctor)
 
 		if err := tx.First(&models.User{}, "id = ? AND role = ?", doctor.ID, enums.UserRoleDoctor).Error; err != nil {
 			return err
@@ -170,7 +166,7 @@ func (s *DoctorService) createAndAssignDoctor(doctor *models.User, organizationI
 	return doctor, assignment, err
 }
 
-func (s *DoctorService) UnassignFromOrganization(doctorID, organizationID uuid.UUID) error {
+func (s *UserService) UnassignFromOrganization(doctorID, organizationID uuid.UUID) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&models.OrganizationDoctor{}).
 			Where("doctor_id = ? AND organization_id = ? AND is_active = ?", doctorID, organizationID, true).
@@ -190,7 +186,7 @@ func (s *DoctorService) UnassignFromOrganization(doctorID, organizationID uuid.U
 	})
 }
 
-func (s *DoctorService) ListDoctorOrganizations(doctorID uuid.UUID, includeInactive bool) ([]models.OrganizationDoctor, error) {
+func (s *UserService) ListDoctorOrganizations(doctorID uuid.UUID, includeInactive bool) ([]models.OrganizationDoctor, error) {
 	var relations []models.OrganizationDoctor
 	query := s.db.Preload("Organization").Where("doctor_id = ?", doctorID)
 	if !includeInactive {
@@ -200,20 +196,4 @@ func (s *DoctorService) ListDoctorOrganizations(doctorID uuid.UUID, includeInact
 		return nil, err
 	}
 	return relations, nil
-}
-
-func (s *DoctorService) ListDoctorsByOrganization(organizationID uuid.UUID, includeInactive bool) ([]models.User, error) {
-	var doctors []models.User
-	query := s.db.Joins("JOIN organization_doctors od ON od.doctor_id = users.id").
-		Where("od.organization_id = ?", organizationID).
-		Where("users.role = ?", enums.UserRoleDoctor)
-
-	if !includeInactive {
-		query = query.Where("od.is_active = ?", true).Where("users.is_active = ?", true)
-	}
-
-	if err := query.Order("users.created_at DESC").Find(&doctors).Error; err != nil {
-		return nil, err
-	}
-	return doctors, nil
 }

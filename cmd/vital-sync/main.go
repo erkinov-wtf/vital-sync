@@ -22,13 +22,15 @@ func main() {
 	// svc init
 	authSvc := services.NewAuthService(cfg, db.DB)
 	orgSvc := services.NewOrganizationService(db.DB)
+	userSvc := services.NewUserService(db.DB, lgr)
 
 	// hnr init
 	orgHnr := handlers.NewOrganizationHandler(orgSvc)
+	userHnr := handlers.NewUserHandler(userSvc)
 
 	// engine and routes
 	router := http.NewRouter(cfg, authSvc)
-	routes.RegisterRoutes(router, orgHnr)
+	routes.RegisterRoutes(router, orgHnr, userHnr)
 
 	err = router.Run()
 	if err != nil {

@@ -13,19 +13,18 @@ import (
 	"gorm.io/gorm"
 )
 
-type DoctorHandler struct {
-	doctorService *services.DoctorService
+type UserHandler struct {
+	doctorService *services.UserService
 }
 
-func NewDoctorHandler(doctorService *services.DoctorService) *DoctorHandler {
-	return &DoctorHandler{
-		doctorService: doctorService,
+func NewUserHandler(userService *services.UserService) *UserHandler {
+	return &UserHandler{
+		doctorService: userService,
 	}
 }
 
-func (h *DoctorHandler) CreateDoctor(c *gin.Context) {
+func (h *UserHandler) CreateDoctor(c *gin.Context) {
 	var body struct {
-		Email          string        `json:"email" binding:"required,email"`
 		PhoneNumber    string        `json:"phone_number" binding:"required"`
 		Password       string        `json:"password" binding:"required"`
 		FirstName      string        `json:"first_name" binding:"required"`
@@ -41,7 +40,6 @@ func (h *DoctorHandler) CreateDoctor(c *gin.Context) {
 	}
 
 	doctor := models.User{
-		Email:        body.Email,
 		PhoneNumber:  body.PhoneNumber,
 		PasswordHash: body.Password,
 		FirstName:    body.FirstName,
@@ -60,7 +58,7 @@ func (h *DoctorHandler) CreateDoctor(c *gin.Context) {
 	c.JSON(http.StatusCreated, doctor)
 }
 
-func (h *DoctorHandler) ListDoctors(c *gin.Context) {
+func (h *UserHandler) ListDoctors(c *gin.Context) {
 	includeInactive := false
 	if includeInactiveStr := c.Query("include_inactive"); includeInactiveStr != "" {
 		val, err := strconv.ParseBool(includeInactiveStr)
@@ -80,7 +78,7 @@ func (h *DoctorHandler) ListDoctors(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": doctors})
 }
 
-func (h *DoctorHandler) GetDoctor(c *gin.Context) {
+func (h *UserHandler) GetDoctor(c *gin.Context) {
 	doctorID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid doctor id"})
@@ -100,7 +98,7 @@ func (h *DoctorHandler) GetDoctor(c *gin.Context) {
 	c.JSON(http.StatusOK, doctor)
 }
 
-func (h *DoctorHandler) UpdateDoctor(c *gin.Context) {
+func (h *UserHandler) UpdateDoctor(c *gin.Context) {
 	doctorID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid doctor id"})
@@ -108,7 +106,6 @@ func (h *DoctorHandler) UpdateDoctor(c *gin.Context) {
 	}
 
 	var body struct {
-		Email       *string       `json:"email"`
 		PhoneNumber *string       `json:"phone_number"`
 		FirstName   *string       `json:"first_name"`
 		LastName    *string       `json:"last_name"`
@@ -123,7 +120,6 @@ func (h *DoctorHandler) UpdateDoctor(c *gin.Context) {
 	}
 
 	updated, err := h.doctorService.UpdateDoctor(doctorID, services.DoctorUpdate{
-		Email:       body.Email,
 		PhoneNumber: body.PhoneNumber,
 		FirstName:   body.FirstName,
 		LastName:    body.LastName,
@@ -142,7 +138,7 @@ func (h *DoctorHandler) UpdateDoctor(c *gin.Context) {
 	c.JSON(http.StatusOK, updated)
 }
 
-func (h *DoctorHandler) DeleteDoctor(c *gin.Context) {
+func (h *UserHandler) DeleteDoctor(c *gin.Context) {
 	doctorID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid doctor id"})
@@ -161,7 +157,7 @@ func (h *DoctorHandler) DeleteDoctor(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *DoctorHandler) UnassignFromOrganization(c *gin.Context) {
+func (h *UserHandler) UnassignFromOrganization(c *gin.Context) {
 	doctorID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid doctor id"})
@@ -186,7 +182,7 @@ func (h *DoctorHandler) UnassignFromOrganization(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *DoctorHandler) ListDoctorOrganizations(c *gin.Context) {
+func (h *UserHandler) ListDoctorOrganizations(c *gin.Context) {
 	doctorID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid doctor id"})
@@ -214,30 +210,4 @@ func (h *DoctorHandler) ListDoctorOrganizations(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": relations})
-}
-
-func (h *DoctorHandler) ListDoctorsByOrganization(c *gin.Context) {
-	orgID, err := uuid.Parse(c.Param("organizationId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid organization id"})
-		return
-	}
-
-	includeInactive := false
-	if includeInactiveStr := c.Query("include_inactive"); includeInactiveStr != "" {
-		val, err := strconv.ParseBool(includeInactiveStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid include_inactive value"})
-			return
-		}
-		includeInactive = val
-	}
-
-	doctors, err := h.doctorService.ListDoctorsByOrganization(orgID, includeInactive)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list doctors: " + err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": doctors})
 }
