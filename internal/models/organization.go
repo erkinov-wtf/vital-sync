@@ -14,12 +14,9 @@ type Organization struct {
 	LicenseNumber string    `gorm:"column:license_number;type:varchar(100);not null;uniqueIndex"`
 	ContactEmail  *string   `gorm:"column:contact_email;type:varchar(255)"`
 	ContactPhone  *string   `gorm:"column:contact_phone;type:varchar(20)"`
-	ManagerID     uuid.UUID `gorm:"column:manager_id;type:uuid;index"`
 	IsActive      bool      `gorm:"column:is_active;default:true"`
 	CreatedAt     time.Time `gorm:"column:created_at;type:timestamptz;default:now()"`
 	UpdatedAt     time.Time `gorm:"column:updated_at;type:timestamptz;default:now()"`
-
-	Manager *User `gorm:"foreignKey:ManagerID"`
 }
 
 func (o *Organization) BeforeCreate(tx *gorm.DB) error {
