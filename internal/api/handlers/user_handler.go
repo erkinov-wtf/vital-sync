@@ -454,6 +454,26 @@ func (h *UserHandler) GetPatient(c *gin.Context) {
 	c.JSON(http.StatusOK, patient)
 }
 
+func (h *UserHandler) GetPatientComplete(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid patient user id"})
+		return
+	}
+
+	data, err := h.userService.GetPatientCompleteData(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "patient not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch patient data: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, data)
+}
+
 func (h *UserHandler) GetUserByTgUsername(c *gin.Context) {
 	username := c.Param("username")
 	user, err := h.userService.GetUserByTelegramUsername(username)

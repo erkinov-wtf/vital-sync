@@ -500,3 +500,43 @@ func (s *UserService) GetUserByTelegramUsername(username string) (*models.User, 
 	}
 	return &user, nil
 }
+
+type PatientCompleteData struct {
+	User          *models.User          `json:"user"`
+	Patient       *models.Patient       `json:"patient"`
+	Checkins      []models.Checkin      `json:"checkins"`
+	VitalReadings []models.VitalReading `json:"vital_readings"`
+}
+
+func (s *UserService) GetPatientCompleteData(userID uuid.UUID) (*PatientCompleteData, error) {
+	var user models.User
+	if err := s.db.First(&user, "id = ? AND role = ?", userID, enums.UserRolePatient).Error; err != nil {
+		return nil, err
+	}
+
+	var patient models.Patient
+	if err := s.db.Preload("Doctor").First(&patient, "user_id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+
+	var checkins []models.Checkin
+	if err := s.db.Where("patient_id = ?", patient.ID).
+		Order("created_at DESC").
+		Find(&checkins).Error; err != nil {
+		return nil, err
+	}
+
+	var vitals []models.VitalReading
+	if err := s.db.Where("patient_id = ?", patient.ID).
+		Order("created_at DESC").
+		Find(&vitals).Error; err != nil {
+		return nil, err
+	}
+
+	return &PatientCompleteData{
+		User:          &user,
+		Patient:       &patient,
+		Checkins:      checkins,
+		VitalReadings: vitals,
+	}, nil
+}

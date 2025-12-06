@@ -20,6 +20,7 @@ func registerUserRoutes(r *gin.RouterGroup, handler *handlers.UserHandler) {
 		users.POST("/patients", handler.CreatePatient)
 		users.GET("/patients", handler.ListPatients)
 		users.GET("/patients/:id", handler.GetPatient)
+		users.GET("/patients/:id/full", handler.GetPatientComplete)
 		users.POST("/patients/:id/medical", handler.CreatePatientMedicalInfo)
 		users.PUT("/patients/:id", handler.UpdatePatient)
 		users.PUT("/patients/:id/medical", handler.UpdatePatientMedicalInfo)
