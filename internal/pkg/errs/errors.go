@@ -8,4 +8,5 @@ var (
 	ErrActiveCheckinExists = errors.New("active checkin already exists for this patient")
 	ErrNoActiveCheckin     = errors.New("no active checkin found for this patient")
 	ErrCheckinNotActive    = errors.New("checkin is not active")
+	ErrScheduleExists      = errors.New("checkin schedule already exists for this patient")
 )

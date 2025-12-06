@@ -23,16 +23,18 @@ func main() {
 	authSvc := services.NewAuthService(cfg, db.DB)
 	orgSvc := services.NewOrganizationService(db.DB)
 	checkinSvc := services.NewCheckinService(db.DB)
+	checkinScheduleSvc := services.NewCheckinScheduleService(db.DB)
 	userSvc := services.NewUserService(db.DB, lgr)
 
 	// hnr init
 	orgHnr := handlers.NewOrganizationHandler(orgSvc)
 	checkinHnr := handlers.NewCheckinHandler(checkinSvc)
+	checkinScheduleHnr := handlers.NewCheckinScheduleHandler(checkinScheduleSvc)
 	userHnr := handlers.NewUserHandler(userSvc)
 
 	// engine and routes
 	router := http.NewRouter(cfg, authSvc)
-	routes.RegisterRoutes(router, orgHnr, userHnr, checkinHnr)
+	routes.RegisterRoutes(router, orgHnr, userHnr, checkinHnr, checkinScheduleHnr)
 
 	err = router.Run()
 	if err != nil {

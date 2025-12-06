@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -93,21 +95,60 @@ func (s *StringArray) Scan(value interface{}) error {
 
 type TimeArray []time.Time
 
+// Value converts TimeArray to PostgreSQL array format
 func (t TimeArray) Value() (driver.Value, error) {
-	if t == nil {
-		return nil, nil
+	if t == nil || len(t) == 0 {
+		return "{}", nil
 	}
-	return json.Marshal(t)
+
+	// PostgreSQL array format: {"08:00:00","20:00:00"}
+	var strs []string
+	for _, v := range t {
+		// Format as TIME (HH:MM:SS)
+		strs = append(strs, fmt.Sprintf("\"%s\"", v.Format("15:04:05")))
+	}
+
+	return "{" + strings.Join(strs, ",") + "}", nil
 }
 
+// Scan converts PostgreSQL array to TimeArray
 func (t *TimeArray) Scan(value interface{}) error {
 	if value == nil {
-		*t = nil
+		*t = TimeArray{}
 		return nil
 	}
-	bytes, ok := value.([]byte)
-	if !ok {
+
+	// Handle PostgreSQL array format
+	switch v := value.(type) {
+	case []byte:
+		return t.parseArray(string(v))
+	case string:
+		return t.parseArray(v)
+	default:
+		return fmt.Errorf("cannot scan type %T into TimeArray", value)
+	}
+}
+
+func (t *TimeArray) parseArray(s string) error {
+	// Remove braces
+	s = strings.Trim(s, "{}")
+	if s == "" {
+		*t = TimeArray{}
 		return nil
 	}
-	return json.Unmarshal(bytes, t)
+
+	parts := strings.Split(s, ",")
+	times := make([]time.Time, 0, len(parts))
+
+	for _, part := range parts {
+		part = strings.Trim(part, "\"")
+		parsedTime, err := time.Parse("15:04:05", part)
+		if err != nil {
+			return err
+		}
+		times = append(times, parsedTime)
+	}
+
+	*t = times
+	return nil
 }
