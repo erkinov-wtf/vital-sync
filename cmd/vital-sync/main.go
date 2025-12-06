@@ -25,6 +25,7 @@ func main() {
 	checkinSvc := services.NewCheckinService(db.DB)
 	checkinScheduleSvc := services.NewCheckinScheduleService(db.DB)
 	vitalReadingSvc := services.NewVitalReadingService(db.DB)
+	alertSvc := services.NewAlertService(db.DB)
 	userSvc := services.NewUserService(db.DB, lgr)
 
 	// hnr init
@@ -32,11 +33,12 @@ func main() {
 	checkinHnr := handlers.NewCheckinHandler(checkinSvc)
 	checkinScheduleHnr := handlers.NewCheckinScheduleHandler(checkinScheduleSvc)
 	vitalReadingHnr := handlers.NewVitalReadingHandler(vitalReadingSvc)
+	alertHnr := handlers.NewAlertHandler(alertSvc)
 	userHnr := handlers.NewUserHandler(userSvc)
 
 	// engine and routes
 	router := http.NewRouter(cfg, authSvc)
-	routes.RegisterRoutes(router, orgHnr, userHnr, checkinHnr, checkinScheduleHnr, vitalReadingHnr)
+	routes.RegisterRoutes(router, orgHnr, userHnr, checkinHnr, checkinScheduleHnr, vitalReadingHnr, alertHnr)
 
 	err = router.Run()
 	if err != nil {

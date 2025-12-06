@@ -12,6 +12,7 @@ func RegisterRoutes(
 	checkinHnr *handlers.CheckinHandler,
 	checkinScheduleHnr *handlers.CheckinScheduleHandler,
 	vitalReadingHnr *handlers.VitalReadingHandler,
+	alertHnr *handlers.AlertHandler,
 ) {
 	api := router.Engine().Group("/api/v1")
 	{
@@ -20,5 +21,6 @@ func RegisterRoutes(
 		registerCheckinRoutes(api, checkinHnr)
 		registerCheckinScheduleRoutes(api, checkinScheduleHnr)
 		registerVitalReadingRoutes(api, vitalReadingHnr)
+		registerAlertRoutes(api, alertHnr)
 	}
 }

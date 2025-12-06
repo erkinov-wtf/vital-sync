@@ -131,6 +131,132 @@ func (s *CheckinService) ListCompletedByPatient(patientID uuid.UUID) ([]models.C
 	return checkins, nil
 }
 
+func (s *CheckinService) ReviewCheckin(checkinID, doctorID uuid.UUID, doctorNotes *string) (*models.Checkin, error) {
+	if err := s.db.First(&models.User{}, "id = ? AND role = ?", doctorID, enums.UserRoleDoctor).Error; err != nil {
+		return nil, err
+	}
+
+	var checkin models.Checkin
+	if err := s.db.First(&checkin, "id = ?", checkinID).Error; err != nil {
+		return nil, err
+	}
+
+	reviewedAt := time.Now()
+	updates := map[string]interface{}{
+		"reviewed_by": doctorID,
+		"reviewed_at": reviewedAt,
+	}
+	if doctorNotes != nil {
+		updates["doctor_notes"] = doctorNotes
+	}
+
+	if err := s.db.Model(&checkin).Updates(updates).Error; err != nil {
+		return nil, err
+	}
+
+	// acknowledge related alerts for this checkin
+	ackUpdates := map[string]interface{}{
+		"is_acknowledged": true,
+		"acknowledged_by": doctorID,
+		"acknowledged_at": reviewedAt,
+	}
+	if err := s.db.Model(&models.Alert{}).
+		Where("checkin_id = ? AND is_acknowledged = ?", checkinID, false).
+		Updates(ackUpdates).Error; err != nil {
+		return nil, err
+	}
+
+	if err := s.db.First(&checkin, "id = ?", checkin.ID).Error; err != nil {
+		return nil, err
+	}
+
+	return &checkin, nil
+}
+
+type CheckinAIUpdate struct {
+	AIAnalysis    *models.JSONB
+	MedicalStatus *enums.MedicalStatus
+	RiskScore     *int
+	Alert         *CheckinAIAlertInput
+}
+
+type CheckinAIAlertInput struct {
+	Severity  enums.AlertSeverity
+	AlertType enums.AlertType
+	Title     string
+	Message   string
+	Details   *models.JSONB
+}
+
+func (s *CheckinService) UpdateAIFields(checkinID uuid.UUID, input CheckinAIUpdate) (*models.Checkin, error) {
+	var checkin models.Checkin
+	if err := s.db.First(&checkin, "id = ?", checkinID).Error; err != nil {
+		return nil, err
+	}
+
+	if checkin.Status != enums.CheckinStatusCompleted {
+		return nil, errs.ErrCheckinNotCompleted
+	}
+
+	updates := map[string]interface{}{}
+	if input.AIAnalysis != nil {
+		updates["ai_analysis"] = *input.AIAnalysis
+	}
+	if input.MedicalStatus != nil {
+		updates["medical_status"] = *input.MedicalStatus
+	}
+	if input.RiskScore != nil {
+		updates["risk_score"] = input.RiskScore
+	}
+
+	if len(updates) == 0 {
+		return &checkin, nil
+	}
+
+	if err := s.db.Model(&checkin).Updates(updates).Error; err != nil {
+		return nil, err
+	}
+
+	// create alert if requested
+	if input.Alert != nil {
+		if err := s.createAlertFromAI(checkin, *input.Alert); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := s.db.First(&checkin, "id = ?", checkin.ID).Error; err != nil {
+		return nil, err
+	}
+
+	return &checkin, nil
+}
+
+func (s *CheckinService) createAlertFromAI(checkin models.Checkin, alertInput CheckinAIAlertInput) error {
+	// minimal validation
+	if alertInput.Severity == "" || alertInput.AlertType == "" || alertInput.Title == "" || alertInput.Message == "" {
+		return errs.ErrMissingAlertFields
+	}
+
+	var patient models.Patient
+	if err := s.db.First(&patient, "id = ?", checkin.PatientID).Error; err != nil {
+		return err
+	}
+
+	alert := models.Alert{
+		PatientID: patient.ID,
+		CheckinID: &checkin.ID,
+		Severity:  alertInput.Severity,
+		AlertType: alertInput.AlertType,
+		Title:     alertInput.Title,
+		Message:   alertInput.Message,
+	}
+	if alertInput.Details != nil {
+		alert.Details = *alertInput.Details
+	}
+
+	return s.db.Create(&alert).Error
+}
+
 func (s *CheckinService) findActiveCheckin(patientID uuid.UUID) (*models.Checkin, error) {
 	var checkin models.Checkin
 	if err := s.db.Where("patient_id = ? AND status IN ?", patientID, activeCheckinStatuses()).

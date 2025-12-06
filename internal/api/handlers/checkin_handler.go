@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/erkinov-wtf/vital-sync/internal/api/services"
+	"github.com/erkinov-wtf/vital-sync/internal/enums"
+	"github.com/erkinov-wtf/vital-sync/internal/models"
 	"github.com/erkinov-wtf/vital-sync/internal/pkg/errs"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -110,6 +112,91 @@ func (h *CheckinHandler) ListCompletedCheckins(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": checkins})
+}
+
+func (h *CheckinHandler) UpdateCheckinAI(c *gin.Context) {
+	checkinID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid checkin id"})
+		return
+	}
+
+	var body struct {
+		AIAnalysis    *models.JSONB        `json:"ai_analysis"`
+		MedicalStatus *enums.MedicalStatus `json:"medical_status"`
+		RiskScore     *int                 `json:"risk_score"`
+		Alert         *struct {
+			Severity  enums.AlertSeverity `json:"severity"`
+			AlertType enums.AlertType     `json:"alert_type"`
+			Title     string              `json:"title"`
+			Message   string              `json:"message"`
+			Details   *models.JSONB       `json:"details"`
+		} `json:"alert"`
+	}
+
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var alertInput *services.CheckinAIAlertInput
+	if body.Alert != nil {
+		alertInput = &services.CheckinAIAlertInput{
+			Severity:  body.Alert.Severity,
+			AlertType: body.Alert.AlertType,
+			Title:     body.Alert.Title,
+			Message:   body.Alert.Message,
+			Details:   body.Alert.Details,
+		}
+	}
+
+	updated, err := h.checkinService.UpdateAIFields(checkinID, services.CheckinAIUpdate{
+		AIAnalysis:    body.AIAnalysis,
+		MedicalStatus: body.MedicalStatus,
+		RiskScore:     body.RiskScore,
+		Alert:         alertInput,
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "checkin not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update checkin analysis: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, updated)
+}
+
+func (h *CheckinHandler) ReviewCheckin(c *gin.Context) {
+	checkinID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid checkin id"})
+		return
+	}
+
+	var body struct {
+		DoctorID    uuid.UUID `json:"doctor_id" binding:"required"`
+		DoctorNotes *string   `json:"doctor_notes"`
+	}
+
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updated, err := h.checkinService.ReviewCheckin(checkinID, body.DoctorID, body.DoctorNotes)
+	if err != nil {
+		switch {
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "doctor or checkin not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to review checkin: " + err.Error()})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, updated)
 }
 
 func (h *CheckinHandler) AddQuestions(c *gin.Context) {
