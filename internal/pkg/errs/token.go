@@ -3,6 +3,9 @@ package errs
 import "errors"
 
 var (
-	ErrInvalidToken = errors.New("invalid token format")
-	ErrExpiredToken = errors.New("token has expired")
+	ErrInvalidToken        = errors.New("invalid token format")
+	ErrExpiredToken        = errors.New("token has expired")
+	ErrActiveCheckinExists = errors.New("active checkin already exists for this patient")
+	ErrNoActiveCheckin     = errors.New("no active checkin found for this patient")
+	ErrCheckinNotActive    = errors.New("checkin is not active")
 )
