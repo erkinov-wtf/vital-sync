@@ -58,12 +58,13 @@ func (s *UserService) ListDoctors(includeInactive bool) ([]models.User, error) {
 }
 
 type DoctorUpdate struct {
-	PhoneNumber *string
-	FirstName   *string
-	LastName    *string
-	Gender      *enums.Gender
-	IsActive    *bool
-	Password    *string
+	PhoneNumber      *string
+	FirstName        *string
+	LastName         *string
+	Gender           *enums.Gender
+	IsActive         *bool
+	Password         *string
+	TelegramUsername *string
 }
 
 func (s *UserService) UpdateDoctor(id uuid.UUID, changes DoctorUpdate) (*models.User, error) {
@@ -87,6 +88,9 @@ func (s *UserService) UpdateDoctor(id uuid.UUID, changes DoctorUpdate) (*models.
 	}
 	if changes.IsActive != nil {
 		updates["is_active"] = *changes.IsActive
+	}
+	if changes.TelegramUsername != nil {
+		updates["telegram_username"] = *changes.TelegramUsername
 	}
 	if changes.Password != nil {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*changes.Password), bcrypt.DefaultCost)
@@ -212,22 +216,24 @@ func (s *UserService) ListDoctorOrganizations(doctorID uuid.UUID, includeInactiv
 // Patient flows
 
 type CreatePatientUserInput struct {
-	PhoneNumber string
-	Password    string
-	FirstName   string
-	LastName    string
-	Gender      *enums.Gender
-	IsActive    *bool
+	PhoneNumber      string
+	Password         string
+	FirstName        string
+	LastName         string
+	Gender           *enums.Gender
+	IsActive         *bool
+	TelegramUsername string
 }
 
 func (s *UserService) CreatePatientUser(input CreatePatientUserInput) (*models.User, error) {
 	user := models.User{
-		PhoneNumber:  input.PhoneNumber,
-		PasswordHash: input.Password,
-		FirstName:    input.FirstName,
-		LastName:     input.LastName,
-		Gender:       input.Gender,
-		Role:         enums.UserRolePatient,
+		PhoneNumber:      input.PhoneNumber,
+		PasswordHash:     input.Password,
+		FirstName:        input.FirstName,
+		LastName:         input.LastName,
+		Gender:           input.Gender,
+		Role:             enums.UserRolePatient,
+		TelegramUsername: input.TelegramUsername,
 	}
 	if input.IsActive != nil {
 		user.IsActive = *input.IsActive
@@ -241,13 +247,14 @@ func (s *UserService) CreatePatientUser(input CreatePatientUserInput) (*models.U
 }
 
 type UpdatePatientUserInput struct {
-	Email       *string
-	PhoneNumber *string
-	FirstName   *string
-	LastName    *string
-	Gender      *enums.Gender
-	IsActive    *bool
-	Password    *string
+	Email            *string
+	PhoneNumber      *string
+	FirstName        *string
+	LastName         *string
+	Gender           *enums.Gender
+	IsActive         *bool
+	Password         *string
+	TelegramUsername *string
 }
 
 func (s *UserService) UpdatePatientUser(id uuid.UUID, input UpdatePatientUserInput) (*models.User, error) {
@@ -274,6 +281,9 @@ func (s *UserService) UpdatePatientUser(id uuid.UUID, input UpdatePatientUserInp
 	}
 	if input.IsActive != nil {
 		updates["is_active"] = *input.IsActive
+	}
+	if input.TelegramUsername != nil {
+		updates["telegram_username"] = *input.TelegramUsername
 	}
 	if input.Password != nil {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*input.Password), bcrypt.DefaultCost)
@@ -481,4 +491,12 @@ func (s *UserService) ListPatientUsers(includeInactive bool) ([]models.User, err
 		return nil, err
 	}
 	return patients, nil
+}
+
+func (s *UserService) GetUserByTelegramUsername(username string) (*models.User, error) {
+	var user models.User
+	if err := s.db.First(&user, "telegram_username = ?", username).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

@@ -26,13 +26,14 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 
 func (h *UserHandler) CreateDoctor(c *gin.Context) {
 	var body struct {
-		PhoneNumber    string        `json:"phone_number" binding:"required"`
-		Password       string        `json:"password" binding:"required"`
-		FirstName      string        `json:"first_name" binding:"required"`
-		LastName       string        `json:"last_name" binding:"required"`
-		Gender         *enums.Gender `json:"gender"`
-		IsActive       *bool         `json:"is_active"`
-		OrganizationID uuid.UUID     `json:"organization_id" binding:"required"`
+		PhoneNumber      string        `json:"phone_number" binding:"required"`
+		Password         string        `json:"password" binding:"required"`
+		FirstName        string        `json:"first_name" binding:"required"`
+		LastName         string        `json:"last_name" binding:"required"`
+		Gender           *enums.Gender `json:"gender"`
+		IsActive         *bool         `json:"is_active"`
+		TelegramUsername string        `json:"telegram_username" binding:"required"`
+		OrganizationID   uuid.UUID     `json:"organization_id" binding:"required"`
 	}
 
 	if err := c.BindJSON(&body); err != nil {
@@ -41,11 +42,12 @@ func (h *UserHandler) CreateDoctor(c *gin.Context) {
 	}
 
 	doctor := models.User{
-		PhoneNumber:  body.PhoneNumber,
-		PasswordHash: body.Password,
-		FirstName:    body.FirstName,
-		LastName:     body.LastName,
-		Gender:       body.Gender,
+		PhoneNumber:      body.PhoneNumber,
+		PasswordHash:     body.Password,
+		FirstName:        body.FirstName,
+		LastName:         body.LastName,
+		Gender:           body.Gender,
+		TelegramUsername: body.TelegramUsername,
 	}
 	if body.IsActive != nil {
 		doctor.IsActive = *body.IsActive
@@ -107,12 +109,13 @@ func (h *UserHandler) UpdateDoctor(c *gin.Context) {
 	}
 
 	var body struct {
-		PhoneNumber *string       `json:"phone_number"`
-		FirstName   *string       `json:"first_name"`
-		LastName    *string       `json:"last_name"`
-		Gender      *enums.Gender `json:"gender"`
-		IsActive    *bool         `json:"is_active"`
-		Password    *string       `json:"password"`
+		PhoneNumber      *string       `json:"phone_number"`
+		FirstName        *string       `json:"first_name"`
+		LastName         *string       `json:"last_name"`
+		Gender           *enums.Gender `json:"gender"`
+		IsActive         *bool         `json:"is_active"`
+		Password         *string       `json:"password"`
+		TelegramUsername *string       `json:"telegram_username"`
 	}
 
 	if err := c.BindJSON(&body); err != nil {
@@ -121,12 +124,13 @@ func (h *UserHandler) UpdateDoctor(c *gin.Context) {
 	}
 
 	updated, err := h.userService.UpdateDoctor(doctorID, services.DoctorUpdate{
-		PhoneNumber: body.PhoneNumber,
-		FirstName:   body.FirstName,
-		LastName:    body.LastName,
-		Gender:      body.Gender,
-		IsActive:    body.IsActive,
-		Password:    body.Password,
+		PhoneNumber:      body.PhoneNumber,
+		FirstName:        body.FirstName,
+		LastName:         body.LastName,
+		Gender:           body.Gender,
+		IsActive:         body.IsActive,
+		Password:         body.Password,
+		TelegramUsername: body.TelegramUsername,
 	})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -216,12 +220,13 @@ func (h *UserHandler) ListDoctorOrganizations(c *gin.Context) {
 
 func (h *UserHandler) CreatePatient(c *gin.Context) {
 	var body struct {
-		PhoneNumber string        `json:"phone_number" binding:"required"`
-		Password    string        `json:"password" binding:"required"`
-		FirstName   string        `json:"first_name" binding:"required"`
-		LastName    string        `json:"last_name" binding:"required"`
-		Gender      *enums.Gender `json:"gender"`
-		IsActive    *bool         `json:"is_active"`
+		PhoneNumber      string        `json:"phone_number" binding:"required"`
+		Password         string        `json:"password" binding:"required"`
+		FirstName        string        `json:"first_name" binding:"required"`
+		LastName         string        `json:"last_name" binding:"required"`
+		Gender           *enums.Gender `json:"gender"`
+		IsActive         *bool         `json:"is_active"`
+		TelegramUsername string        `json:"telegram_username" binding:"required"`
 	}
 
 	if err := c.BindJSON(&body); err != nil {
@@ -230,12 +235,13 @@ func (h *UserHandler) CreatePatient(c *gin.Context) {
 	}
 
 	user, err := h.userService.CreatePatientUser(services.CreatePatientUserInput{
-		PhoneNumber: body.PhoneNumber,
-		Password:    body.Password,
-		FirstName:   body.FirstName,
-		LastName:    body.LastName,
-		Gender:      body.Gender,
-		IsActive:    body.IsActive,
+		PhoneNumber:      body.PhoneNumber,
+		Password:         body.Password,
+		FirstName:        body.FirstName,
+		LastName:         body.LastName,
+		Gender:           body.Gender,
+		IsActive:         body.IsActive,
+		TelegramUsername: body.TelegramUsername,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create patient user: " + err.Error()})
@@ -314,13 +320,14 @@ func (h *UserHandler) UpdatePatient(c *gin.Context) {
 	}
 
 	var body struct {
-		Email       *string       `json:"email"`
-		PhoneNumber *string       `json:"phone_number"`
-		FirstName   *string       `json:"first_name"`
-		LastName    *string       `json:"last_name"`
-		Gender      *enums.Gender `json:"gender"`
-		IsActive    *bool         `json:"is_active"`
-		Password    *string       `json:"password"`
+		Email            *string       `json:"email"`
+		PhoneNumber      *string       `json:"phone_number"`
+		FirstName        *string       `json:"first_name"`
+		LastName         *string       `json:"last_name"`
+		Gender           *enums.Gender `json:"gender"`
+		IsActive         *bool         `json:"is_active"`
+		Password         *string       `json:"password"`
+		TelegramUsername *string       `json:"telegram_username"`
 	}
 
 	if err := c.BindJSON(&body); err != nil {
@@ -329,13 +336,14 @@ func (h *UserHandler) UpdatePatient(c *gin.Context) {
 	}
 
 	user, err := h.userService.UpdatePatientUser(userID, services.UpdatePatientUserInput{
-		Email:       body.Email,
-		PhoneNumber: body.PhoneNumber,
-		FirstName:   body.FirstName,
-		LastName:    body.LastName,
-		Gender:      body.Gender,
-		IsActive:    body.IsActive,
-		Password:    body.Password,
+		Email:            body.Email,
+		PhoneNumber:      body.PhoneNumber,
+		FirstName:        body.FirstName,
+		LastName:         body.LastName,
+		Gender:           body.Gender,
+		IsActive:         body.IsActive,
+		Password:         body.Password,
+		TelegramUsername: body.TelegramUsername,
 	})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -444,4 +452,19 @@ func (h *UserHandler) GetPatient(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, patient)
+}
+
+func (h *UserHandler) GetUserByTgUsername(c *gin.Context) {
+	username := c.Param("username")
+	user, err := h.userService.GetUserByTelegramUsername(username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }

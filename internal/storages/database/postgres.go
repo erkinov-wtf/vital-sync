@@ -40,7 +40,6 @@ func LoadDB(cfg *config.Config, logger *slog.Logger) (*PostgresDB, error) {
 		&models.Organization{},
 		&models.OrganizationDoctor{},
 		&models.Patient{},
-		&models.TelegramIntegration{},
 		&models.User{},
 		&models.VitalReading{},
 	}

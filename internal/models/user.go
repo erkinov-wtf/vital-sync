@@ -10,17 +10,18 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID      `gorm:"type:uuid;primaryKey"`
-	PhoneNumber  string         `gorm:"column:phone_number;type:varchar(20);not null;uniqueIndex"`
-	PasswordHash string         `gorm:"column:password_hash;type:varchar(255);not null" json:"-"`
-	FirstName    string         `gorm:"column:first_name;type:varchar(100);not null"`
-	LastName     string         `gorm:"column:last_name;type:varchar(100);not null"`
-	Role         enums.UserRole `gorm:"column:role;type:varchar(20);not null"` // admin, doctor, patient
-	Gender       *enums.Gender  `gorm:"column:gender;type:varchar(10)"`        // male, female, other
-	IsActive     bool           `gorm:"column:is_active;default:true"`
-	LastLoginAt  *time.Time     `gorm:"column:last_login_at;type:timestamptz"`
-	CreatedAt    time.Time      `gorm:"column:created_at;type:timestamptz;default:now()"`
-	UpdatedAt    time.Time      `gorm:"column:updated_at;type:timestamptz;default:now()"`
+	ID               uuid.UUID      `gorm:"type:uuid;primaryKey"`
+	PhoneNumber      string         `gorm:"column:phone_number;type:varchar(20);not null;uniqueIndex"`
+	PasswordHash     string         `gorm:"column:password_hash;type:varchar(255);not null" json:"-"`
+	FirstName        string         `gorm:"column:first_name;type:varchar(100);not null"`
+	LastName         string         `gorm:"column:last_name;type:varchar(100);not null"`
+	Role             enums.UserRole `gorm:"column:role;type:varchar(20);not null"` // admin, doctor, patient
+	Gender           *enums.Gender  `gorm:"column:gender;type:varchar(10)"`        // male, female, other
+	IsActive         bool           `gorm:"column:is_active;default:true"`
+	TelegramUsername string         `gorm:"column:telegram_username;type:varchar(100);uniqueIndex"`
+	LastLoginAt      *time.Time     `gorm:"column:last_login_at;type:timestamptz"`
+	CreatedAt        time.Time      `gorm:"column:created_at;type:timestamptz;default:now()"`
+	UpdatedAt        time.Time      `gorm:"column:updated_at;type:timestamptz;default:now()"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {

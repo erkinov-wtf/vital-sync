@@ -6,22 +6,23 @@ import (
 )
 
 func registerUserRoutes(r *gin.RouterGroup, handler *handlers.UserHandler) {
-	org := r.Group("/users")
+	users := r.Group("/users")
 	{
 		// doctors
-		org.POST("/doctors", handler.CreateDoctor)
-		org.GET("/doctors", handler.ListDoctors)
-		org.GET("/doctors/:id", handler.GetDoctor)
-		org.GET("/doctors/:id/organizations", handler.ListDoctorOrganizations)
-		org.PUT("/doctors/:id", handler.UpdateDoctor)
-		org.DELETE("/doctors/:id", handler.DeleteDoctor)
+		users.POST("/doctors", handler.CreateDoctor)
+		users.GET("/doctors", handler.ListDoctors)
+		users.GET("/doctors/:id", handler.GetDoctor)
+		users.GET("/doctors/:id/organizations", handler.ListDoctorOrganizations)
+		users.PUT("/doctors/:id", handler.UpdateDoctor)
+		users.DELETE("/doctors/:id", handler.DeleteDoctor)
 
 		// patients
-		org.POST("/patients", handler.CreatePatient)
-		org.GET("/patients", handler.ListPatients)
-		org.GET("/patients/:id", handler.GetPatient)
-		org.POST("/patients/:id/medical", handler.CreatePatientMedicalInfo)
-		org.PUT("/patients/:id", handler.UpdatePatient)
-		org.PUT("/patients/:id/medical", handler.UpdatePatientMedicalInfo)
+		users.POST("/patients", handler.CreatePatient)
+		users.GET("/patients", handler.ListPatients)
+		users.GET("/patients/:id", handler.GetPatient)
+		users.POST("/patients/:id/medical", handler.CreatePatientMedicalInfo)
+		users.PUT("/patients/:id", handler.UpdatePatient)
+		users.PUT("/patients/:id/medical", handler.UpdatePatientMedicalInfo)
+		users.GET("/patients/telegram/:username", handler.GetUserByTgUsername)
 	}
 }
