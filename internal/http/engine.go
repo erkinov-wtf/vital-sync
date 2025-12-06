@@ -3,7 +3,6 @@ package http
 import (
 	"fmt"
 
-	"github.com/erkinov-wtf/vital-sync/internal/api/middlewares"
 	"github.com/erkinov-wtf/vital-sync/internal/api/services"
 	"github.com/erkinov-wtf/vital-sync/internal/config"
 	"github.com/gin-gonic/gin"
@@ -25,7 +24,7 @@ func NewRouter(cfg *config.Config, authSvc *services.AuthService) *Router {
 	// Middleware
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	r.Use(middlewares.Auth(authSvc))
+	//r.Use(middlewares.Auth(authSvc))
 
 	return &Router{
 		engine: r,
