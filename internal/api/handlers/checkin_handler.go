@@ -92,6 +92,26 @@ func (h *CheckinHandler) GetActiveCheckin(c *gin.Context) {
 	c.JSON(http.StatusOK, checkin)
 }
 
+func (h *CheckinHandler) ListCompletedCheckins(c *gin.Context) {
+	patientID, err := uuid.Parse(c.Param("patientId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid patient id"})
+		return
+	}
+
+	checkins, err := h.checkinService.ListCompletedByPatient(patientID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "patient not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list checkins: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": checkins})
+}
+
 func (h *CheckinHandler) AddQuestions(c *gin.Context) {
 	checkinID, err := uuid.Parse(c.Param("id"))
 	if err != nil {

@@ -113,6 +113,24 @@ func (s *CheckinService) AddAnswers(checkinID uuid.UUID, answers []interface{}) 
 	return s.appendToArrayField(checkinID, "answers", answers)
 }
 
+func (s *CheckinService) ListCompletedByPatient(patientID uuid.UUID) ([]models.Checkin, error) {
+	var patient models.Patient
+	if err := s.db.First(&patient, "user_id = ?", patientID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	var checkins []models.Checkin
+	if err := s.db.Where("patient_id = ? AND status = ?", patient.ID, enums.CheckinStatusCompleted).
+		Order("initiated_at DESC").
+		Find(&checkins).Error; err != nil {
+		return nil, err
+	}
+	return checkins, nil
+}
+
 func (s *CheckinService) findActiveCheckin(patientID uuid.UUID) (*models.Checkin, error) {
 	var checkin models.Checkin
 	if err := s.db.Where("patient_id = ? AND status IN ?", patientID, activeCheckinStatuses()).
