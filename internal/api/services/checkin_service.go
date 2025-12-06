@@ -141,6 +141,10 @@ func (s *CheckinService) ReviewCheckin(checkinID, doctorID uuid.UUID, doctorNote
 		return nil, err
 	}
 
+	if checkin.AIAnalysis == nil {
+		return nil, errs.ErrCheckinNotAnalyzed
+	}
+
 	reviewedAt := time.Now()
 	updates := map[string]interface{}{
 		"reviewed_by": doctorID,
