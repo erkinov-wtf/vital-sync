@@ -30,7 +30,7 @@ func (s *UserService) CreateDoctor(doctor *models.User, orgID uuid.UUID) (*model
 	doctor.Role = enums.UserRoleDoctor
 	user, orgDoc, err := s.createAndAssignDoctor(doctor, orgID)
 	if err != nil {
-		s.logg.Error("couldn't create new doctor and assign", err.Error())
+		s.logg.Error("couldn't create new doctor and assign", "error", err)
 		return nil, nil, err
 	}
 

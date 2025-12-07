@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/erkinov-wtf/vital-sync/internal/api/handlers"
 	"github.com/erkinov-wtf/vital-sync/internal/api/routes"
 	"github.com/erkinov-wtf/vital-sync/internal/api/services"
@@ -8,6 +10,7 @@ import (
 	"github.com/erkinov-wtf/vital-sync/internal/http"
 	"github.com/erkinov-wtf/vital-sync/internal/pkg/logger"
 	"github.com/erkinov-wtf/vital-sync/internal/storages/database"
+	"github.com/erkinov-wtf/vital-sync/internal/workers"
 )
 
 func main() {
@@ -18,6 +21,8 @@ func main() {
 		lgr.Error("couldn't load DB")
 		return
 	}
+
+	ctx := context.Background()
 
 	// svc init
 	authSvc := services.NewAuthService(cfg, db.DB)
@@ -36,13 +41,17 @@ func main() {
 	alertHnr := handlers.NewAlertHandler(alertSvc)
 	userHnr := handlers.NewUserHandler(userSvc)
 
+	// workers
+	checkinScheduler := workers.NewCheckinScheduler(db.DB, lgr, checkinSvc, cfg.Timezone)
+	checkinScheduler.Start(ctx)
+
 	// engine and routes
 	router := http.NewRouter(cfg, authSvc)
 	routes.RegisterRoutes(router, orgHnr, userHnr, checkinHnr, checkinScheduleHnr, vitalReadingHnr, alertHnr)
 
 	err = router.Run()
 	if err != nil {
-		lgr.Error("cant run the http engine", err.Error())
+		lgr.Error("cant run the http engine", "error", err)
 		return
 	}
 }
