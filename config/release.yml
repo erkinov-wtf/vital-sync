@@ -8,10 +8,10 @@ production_configs:
   database:
     host: "db"
     port: "6061"
-    name: "vital-sync"
+    name: "postgres"
     user: "postgres"
     schema: "public"
-    password: "vital-sync" # will be overwritten from os.Getenv()
+    password: "postgres" # will be overwritten from os.Getenv()
 
   jwt:
     audience: "newUsersProd"
