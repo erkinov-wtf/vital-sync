@@ -15,19 +15,19 @@ import (
 )
 
 type alertResponse struct {
-	ID             uuid.UUID           `json:"id"`
-	CheckinID      *uuid.UUID          `json:"checkin_id"`
-	PatientUserID  uuid.UUID           `json:"patient_user_id"`
-	Severity       enums.AlertSeverity `json:"severity"`
-	AlertType      enums.AlertType     `json:"alert_type"`
-	Title          string              `json:"title"`
-	Message        string              `json:"message"`
-	Details        models.JSONB        `json:"details"`
-	IsAcknowledged bool                `json:"is_acknowledged"`
-	AcknowledgedBy *uuid.UUID          `json:"acknowledged_by"`
-	AcknowledgedAt *time.Time          `json:"acknowledged_at"`
-	ActionTaken    *string             `json:"action_taken"`
-	CreatedAt      time.Time           `json:"created_at"`
+	ID             uuid.UUID           `json:"ID"`
+	CheckinID      *uuid.UUID          `json:"CheckinID"`
+	PatientUserID  uuid.UUID           `json:"PatientUserID"`
+	Severity       enums.AlertSeverity `json:"Severity"`
+	AlertType      enums.AlertType     `json:"AlertType"`
+	Title          string              `json:"Title"`
+	Message        string              `json:"Message"`
+	Details        models.JSONB        `json:"Details"`
+	IsAcknowledged bool                `json:"IsAcknowledged"`
+	AcknowledgedBy *uuid.UUID          `json:"AcknowledgedBy"`
+	AcknowledgedAt *time.Time          `json:"AcknowledgedAt"`
+	ActionTaken    *string             `json:"ActionTaken"`
+	CreatedAt      time.Time           `json:"CreatedAt"`
 }
 
 type AlertHandler struct {
