@@ -1,5 +1,5 @@
 production_configs:
-  tg_bot_url: "http://localhost:8081/checkin"
+  tg_bot_url: "http://ai500bot:8081/checkin"
 
   server:
     port: 8080
