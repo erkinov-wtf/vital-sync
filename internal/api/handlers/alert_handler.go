@@ -4,12 +4,31 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/erkinov-wtf/vital-sync/internal/api/services"
+	"github.com/erkinov-wtf/vital-sync/internal/enums"
+	"github.com/erkinov-wtf/vital-sync/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+type alertResponse struct {
+	ID             uuid.UUID           `json:"id"`
+	CheckinID      *uuid.UUID          `json:"checkin_id"`
+	PatientUserID  uuid.UUID           `json:"patient_user_id"`
+	Severity       enums.AlertSeverity `json:"severity"`
+	AlertType      enums.AlertType     `json:"alert_type"`
+	Title          string              `json:"title"`
+	Message        string              `json:"message"`
+	Details        models.JSONB        `json:"details"`
+	IsAcknowledged bool                `json:"is_acknowledged"`
+	AcknowledgedBy *uuid.UUID          `json:"acknowledged_by"`
+	AcknowledgedAt *time.Time          `json:"acknowledged_at"`
+	ActionTaken    *string             `json:"action_taken"`
+	CreatedAt      time.Time           `json:"created_at"`
+}
 
 type AlertHandler struct {
 	alertService *services.AlertService
@@ -46,5 +65,29 @@ func (h *AlertHandler) ListDoctorAlerts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": alerts})
+	resp := make([]alertResponse, 0, len(alerts))
+	for _, a := range alerts {
+		patientUserID := uuid.Nil
+		if a.Patient != nil {
+			patientUserID = a.Patient.UserID
+		}
+
+		resp = append(resp, alertResponse{
+			ID:             a.ID,
+			CheckinID:      a.CheckinID,
+			PatientUserID:  patientUserID,
+			Severity:       a.Severity,
+			AlertType:      a.AlertType,
+			Title:          a.Title,
+			Message:        a.Message,
+			Details:        a.Details,
+			IsAcknowledged: a.IsAcknowledged,
+			AcknowledgedBy: a.AcknowledgedBy,
+			AcknowledgedAt: a.AcknowledgedAt,
+			ActionTaken:    a.ActionTaken,
+			CreatedAt:      a.CreatedAt,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": resp})
 }

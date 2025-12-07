@@ -58,7 +58,8 @@ func (s *AlertService) ListByDoctor(doctorID uuid.UUID, includeAcknowledged bool
 
 	query := s.db.Model(&models.Alert{}).
 		Joins("JOIN patients p ON p.id = alerts.patient_id").
-		Where("p.doctor_id = ?", doctorID)
+		Where("p.doctor_id = ?", doctorID).
+		Preload("Patient")
 	if !includeAcknowledged {
 		query = query.Where("alerts.is_acknowledged = ?", false)
 	}
