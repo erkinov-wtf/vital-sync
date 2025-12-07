@@ -12,4 +12,5 @@ var (
 	ErrCheckinNotCompleted = errors.New("checkin is not completed yet")
 	ErrMissingAlertFields  = errors.New("alert input missing required fields")
 	ErrCheckinNotAnalyzed  = errors.New("checkin has not been analyzed yet")
+	ErrNoActiveSchedule    = errors.New("no active checkin schedule found for this patient")
 )

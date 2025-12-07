@@ -22,7 +22,7 @@ func main() {
 	// svc init
 	authSvc := services.NewAuthService(cfg, db.DB)
 	orgSvc := services.NewOrganizationService(db.DB)
-	checkinSvc := services.NewCheckinService(db.DB)
+	checkinSvc := services.NewCheckinService(db.DB, cfg)
 	checkinScheduleSvc := services.NewCheckinScheduleService(db.DB)
 	vitalReadingSvc := services.NewVitalReadingService(db.DB)
 	alertSvc := services.NewAlertService(db.DB)

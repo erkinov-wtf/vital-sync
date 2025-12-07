@@ -292,3 +292,22 @@ func (h *CheckinHandler) GetCheckin(c *gin.Context) {
 
 	c.JSON(http.StatusOK, checkin)
 }
+
+func (h *CheckinHandler) ManualCheckin(c *gin.Context) {
+	patientID, err := uuid.Parse(c.Param("patientId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid patient id"})
+		return
+	}
+
+	checkin, err := h.checkinService.StartManualCheckin(patientID)
+	if errors.Is(err, errs.ErrActiveCheckinExists) {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "patient not found"})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to start manual checkin: " + err.Error()})
+	}
+
+	c.JSON(http.StatusCreated, checkin)
+}

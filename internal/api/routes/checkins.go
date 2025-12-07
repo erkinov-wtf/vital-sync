@@ -17,5 +17,6 @@ func registerCheckinRoutes(r *gin.RouterGroup, handler *handlers.CheckinHandler)
 		checkins.PATCH("/:id/review", handler.ReviewCheckin)
 		checkins.PATCH("/:id/analysis", handler.UpdateCheckinAI)
 		checkins.GET("/:id", handler.GetCheckin)
+		checkins.POST("/start/manual/:patientId", handler.ManualCheckin)
 	}
 }

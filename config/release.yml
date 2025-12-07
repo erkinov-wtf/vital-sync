@@ -1,4 +1,6 @@
 production_configs:
+  tg_bot_url: "http://localhost:8081/checkin"
+
   server:
     port: 8080
     host: "localhost"

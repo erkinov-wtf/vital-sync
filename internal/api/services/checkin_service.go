@@ -3,8 +3,12 @@ package services
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
 	"time"
 
+	"github.com/erkinov-wtf/vital-sync/internal/config"
 	"github.com/erkinov-wtf/vital-sync/internal/enums"
 	"github.com/erkinov-wtf/vital-sync/internal/models"
 	"github.com/erkinov-wtf/vital-sync/internal/pkg/errs"
@@ -13,11 +17,12 @@ import (
 )
 
 type CheckinService struct {
-	db *gorm.DB
+	db  *gorm.DB
+	cfg *config.Config
 }
 
-func NewCheckinService(db *gorm.DB) *CheckinService {
-	return &CheckinService{db: db}
+func NewCheckinService(db *gorm.DB, cfg *config.Config) *CheckinService {
+	return &CheckinService{db: db, cfg: cfg}
 }
 
 func (s *CheckinService) StartCheckin(patientID uuid.UUID, scheduleID *uuid.UUID) (*models.Checkin, error) {
@@ -308,6 +313,67 @@ func (s *CheckinService) appendToArrayField(checkinID uuid.UUID, field string, i
 	}
 
 	return &checkin, nil
+}
+
+func (s *CheckinService) StartManualCheckin(patientID uuid.UUID) (*models.Checkin, error) {
+	var patient models.User
+	if err := s.db.First(&patient, "id = ? AND role = ?", patientID, enums.UserRolePatient).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	var pat models.Patient
+	if err := s.db.First(&pat, "user_id = ?", patientID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	var schedule models.CheckinSchedule
+	if err := s.db.Where("patient_id = ? AND is_active = ?", pat.ID, true).First(&schedule).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errs.ErrNoActiveSchedule
+		}
+		return nil, err
+	}
+
+	checkin, err := s.StartCheckin(patientID, &schedule.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// making request to external AI service
+	url := fmt.Sprintf("%s/%s", s.cfg.Internal.TgBotURL, patient.ID)
+
+	// create HTTP request
+	req, err := http.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	// send request with timeout
+	client := &http.Client{
+		Timeout: 1 * time.Minute,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request to bot service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+
+		return nil, fmt.Errorf("bot service returned error status: %d; body: %v", resp.StatusCode, string(body))
+	}
+
+	return checkin, nil
 }
 
 func appendJSONBArray(existing models.JSONB, additions []interface{}) (models.JSONB, error) {

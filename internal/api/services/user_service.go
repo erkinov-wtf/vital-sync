@@ -502,10 +502,11 @@ func (s *UserService) GetUserByTelegramUsername(username string) (*models.User, 
 }
 
 type PatientCompleteData struct {
-	User          *models.User          `json:"user"`
-	Patient       *models.Patient       `json:"patient"`
-	Checkins      []models.Checkin      `json:"checkins"`
-	VitalReadings []models.VitalReading `json:"vital_readings"`
+	User          *models.User            `json:"user"`
+	Patient       *models.Patient         `json:"patient"`
+	Schedule      *models.CheckinSchedule `json:"schedule"`
+	Checkins      []models.Checkin        `json:"checkins"`
+	VitalReadings []models.VitalReading   `json:"vital_readings"`
 }
 
 func (s *UserService) GetPatientCompleteData(userID uuid.UUID) (*PatientCompleteData, error) {
@@ -517,6 +518,13 @@ func (s *UserService) GetPatientCompleteData(userID uuid.UUID) (*PatientComplete
 	var patient models.Patient
 	if err := s.db.Preload("Doctor").First(&patient, "user_id = ?", userID).Error; err != nil {
 		return nil, err
+	}
+
+	var schedule models.CheckinSchedule
+	if err := s.db.First(&schedule, "patient_id = ? AND is_active = ?", patient.ID, true).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
 	}
 
 	var checkins []models.Checkin
@@ -536,6 +544,7 @@ func (s *UserService) GetPatientCompleteData(userID uuid.UUID) (*PatientComplete
 	return &PatientCompleteData{
 		User:          &user,
 		Patient:       &patient,
+		Schedule:      &schedule,
 		Checkins:      checkins,
 		VitalReadings: vitals,
 	}, nil

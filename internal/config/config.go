@@ -21,6 +21,7 @@ type Config struct {
 }
 
 type Internal struct {
+	TgBotURL string   `yaml:"tg_bot_url"`
 	Server   Server   `yaml:"server"`
 	Database Database `yaml:"database"`
 	Jwt      Jwt      `yaml:"jwt"`
