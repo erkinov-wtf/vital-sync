@@ -301,10 +301,6 @@ func (h *CheckinHandler) ManualCheckin(c *gin.Context) {
 	}
 
 	checkingType := c.Query("type")
-	if checkingType != "call" || checkingType != "text" {
-		checkingType = "text"
-	}
-
 	checkin, err := h.checkinService.StartManualCheckin(patientID, checkingType)
 	if errors.Is(err, errs.ErrActiveCheckinExists) {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
