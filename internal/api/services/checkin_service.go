@@ -315,7 +315,7 @@ func (s *CheckinService) appendToArrayField(checkinID uuid.UUID, field string, i
 	return &checkin, nil
 }
 
-func (s *CheckinService) StartManualCheckin(patientID uuid.UUID) (*models.Checkin, error) {
+func (s *CheckinService) StartManualCheckin(patientID uuid.UUID, checkingType string) (*models.Checkin, error) {
 	var patient models.User
 	if err := s.db.First(&patient, "id = ? AND role = ?", patientID, enums.UserRolePatient).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -346,7 +346,7 @@ func (s *CheckinService) StartManualCheckin(patientID uuid.UUID) (*models.Checki
 	}
 
 	// making request to external AI service
-	url := fmt.Sprintf("%s/%s", s.cfg.Internal.TgBotURL, patient.ID)
+	url := fmt.Sprintf("%s/%s?type=%s", s.cfg.Internal.TgBotURL, patient.ID, checkingType)
 
 	// create HTTP request
 	req, err := http.NewRequest(http.MethodPost, url, nil)

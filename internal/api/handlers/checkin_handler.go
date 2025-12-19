@@ -300,7 +300,12 @@ func (h *CheckinHandler) ManualCheckin(c *gin.Context) {
 		return
 	}
 
-	checkin, err := h.checkinService.StartManualCheckin(patientID)
+	checkingType := c.Query("type")
+	if checkingType != "call" || checkingType != "text" {
+		checkingType = "text"
+	}
+
+	checkin, err := h.checkinService.StartManualCheckin(patientID, checkingType)
 	if errors.Is(err, errs.ErrActiveCheckinExists) {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 	} else if errors.Is(err, gorm.ErrRecordNotFound) {

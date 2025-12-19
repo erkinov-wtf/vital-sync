@@ -106,7 +106,7 @@ func (s *CheckinScheduler) handleSchedule(schedule models.CheckinSchedule, tickT
 	if _, err := s.checkinSvc.GetActiveCheckin(patientUserID); err == nil {
 		s.logger.Info("active checkin already in progress, skipping scheduled start", "patient_id", patientUserID, "schedule_id", schedule.ID)
 	} else if errors.Is(err, errs.ErrNoActiveCheckin) {
-		checkin, err := s.checkinSvc.StartManualCheckin(patientUserID)
+		checkin, err := s.checkinSvc.StartManualCheckin(patientUserID, "text")
 		if err != nil {
 			return fmt.Errorf("start manual checkin: %w", err)
 		}
